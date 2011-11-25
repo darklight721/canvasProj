@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Untitled Page</title>
+    <style type="text/css">
+        body
+        {
+        	background-color:Teal;
+        }
+        canvas
+        {
+        	background-color:White;
+        }
+    </style>
+    <script type="text/javascript">
+        canvasProj = function(){
+            var mCanvasId;      // holds the id of the canvas elem
+            var mCanvasTable;
+            var mIsMouseDown = false;
+            
+            // coordinates
+            var mX = 0;
+            var mY = 0;
+            var mPrevX = 0;
+            var mPrevY = 0;
+            
+            // start of public members ****************************************
+            function init(canvasId)
+            {
+                mCanvasId = canvasId;
+                
+                // add mouse event listeners
+                mCanvasId.addEventListener("mousedown",function(ev){
+                    mIsMouseDown = true;
+                    getCoordinates(ev);
+                    mPrevX = mX;
+                    mPrevY = mY;
+                },false);
+                
+                mCanvasId.addEventListener("mousemove",function(ev){
+                    canvasDraw(ev);
+                },false);
+                
+                mCanvasId.addEventListener("mouseup",function(){
+                    mIsMouseDown = false;
+                },false);
+                
+                mCanvasId.addEventListener("mouseout",function(){
+                    mIsMouseDown = false;
+                },false);
+                
+                initTable();
+            }
+            // end of public members ******************************************
+            
+            function canvasDraw(ev)
+            {
+                if (mIsMouseDown)
+                {
+			        getCoordinates(ev);   
+			        drawLines();
+                }
+            }
+            
+            function getCoordinates(ev)
+            {
+                // get the mouse position
+		        if (ev.pageX || ev.pageX == 0) // for chrome/safari
+		        {
+			        mX = ev.pageX - mCanvasId.offsetLeft;
+			        mY = ev.pageY - mCanvasId.offsetTop;
+		        }
+		        else if (ev.layerX || ev.layerX == 0) // for firefox
+		        {
+			        mX = ev.layerX;
+			        mY = ev.layerY;
+		        }      
+		        else if (ev.offsetX || ev.offsetX == 0) // for opera
+		        {
+			        mX = ev.offsetX;
+			        mY = ev.offsetY;
+		        }
+            }
+            
+            function drawLines()
+            {
+                var context = mCanvasId.getContext("2d");
+                context.strokeStyle = "#000";
+                context.lineWidth = 1;
+                context.lineCap = "round";
+                
+                context.beginPath();
+                context.moveTo(mPrevX,mPrevY);
+                context.lineTo(mX,mY);
+                context.stroke();          
+                
+                // save coordinate to the table
+		        mCanvasTable[mX][mY] = 1; 
+    		    
+		        mPrevX = mX;
+		        mPrevY = mY;
+    		    
+		        connectAdjacentLines(mX,mY);
+            }
+            
+            function connectAdjacentLines(x,y)
+            {
+                var context = mCanvasId.getContext("2d");
+                context.strokeStyle = "#000";
+                context.lineWidth = 1;
+                context.lineCap = "round";
+                context.globalAlpha = 0.05;
+                
+                var xMin = 0 - Math.min(25,x);
+                var xMax = Math.min(25,mCanvasId.width - x);
+                var yMin = 0 - Math.min(25,y);
+                var yMax = Math.min(25,mCanvasId.height - y);
+                
+                for (var i = xMin; i < xMax; i++)
+                {
+                    for (var j = yMin; j < yMax; j++)
+                    {
+                        if (mCanvasTable[x+i][y+j] == 1)
+                        {
+                            context.beginPath();
+                            context.moveTo(x,y);
+                            context.lineTo(x+i,y+j);
+                            context.stroke();
+                        }
+                    }
+                }
+                // restore alpha
+                context.globalAlpha = 1;
+            }  
+            
+            function initTable()
+            {
+                mCanvasTable = new Array();
+                for (var i = 0; i < mCanvasId.width; i++)
+                {
+                    mCanvasTable[i] = new Array();
+                    for (var j = 0; j < mCanvasId.height; j++)
+                    {
+                        mCanvasTable[i][j] = 0;
+                    }
+                }
+            }
+            
+            return {
+                init: init
+            }         
+        }();   
+    </script>
+</head>
+<body onload="canvasProj.init(canvas)">
+<canvas id="canvas" width="800px" height="600px"></canvas>
+</body>
+</html>
