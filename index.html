@@ -86,6 +86,7 @@
             function drawLines()
             {
                 var context = mCanvasId.getContext("2d");
+                context.globalAlpha = 0.04;
                 context.strokeStyle = "#000";
                 context.lineWidth = 1;
                 context.lineCap = "round";
@@ -110,7 +111,7 @@
                 context.strokeStyle = "#000";
                 context.lineWidth = 1;
                 context.lineCap = "round";
-                context.globalAlpha = 0.05;
+                //context.globalAlpha = 0.05;
                 
                 var xMin = 0 - Math.min(25,x);
                 var xMax = Math.min(25,mCanvasId.width - x);
@@ -131,7 +132,7 @@
                     }
                 }
                 // restore alpha
-                context.globalAlpha = 1;
+                //context.globalAlpha = 1;
             }  
             
             function initTable()
