@@ -2,21 +2,25 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Untitled Page</title>
     <style type="text/css">
         body
         {
-        	background-color:Teal;
+        	width:100%;
+        	padding:0px;
+        	margin:0px;
         }
         canvas
         {
         	background-color:White;
+        	position:absolute;
         }
     </style>
     <script type="text/javascript">
         canvasProj = function(){
             var mCanvasId;      // holds the id of the canvas elem
-            var mCanvasTable;
+            var mCanvasTable;	// holds the coordinates of the drawn line
             var mIsMouseDown = false;
             
             // coordinates
@@ -29,28 +33,54 @@
             function init(canvasId)
             {
                 mCanvasId = canvasId;
-                
-                // add mouse event listeners
-                mCanvasId.addEventListener("mousedown",function(ev){
-                    mIsMouseDown = true;
-                    getCoordinates(ev);
-                    mPrevX = mX;
-                    mPrevY = mY;
-                },false);
-                
-                mCanvasId.addEventListener("mousemove",function(ev){
-                    canvasDraw(ev);
-                },false);
-                
-                mCanvasId.addEventListener("mouseup",function(){
-                    mIsMouseDown = false;
-                },false);
-                
-                mCanvasId.addEventListener("mouseout",function(){
-                    mIsMouseDown = false;
-                },false);
-                
+                positionControls();
                 initTable();
+                
+                // disable default behavior for touchmove
+				document.body.addEventListener('touchmove', function(event) {
+					event.preventDefault();
+				}, false);
+                
+                if (navigator.userAgent.indexOf('iPad') != -1 || navigator.userAgent.indexOf('iPhone') != -1 || navigator.userAgent.indexOf('iPod') != -1)
+				{
+					// add touch event listeners
+					mCanvasId.addEventListener('touchstart', function(ev) {
+						mIsMouseDown = true;
+						getCoordinates(ev);
+						mPrevX = mX;
+						mPrevY = mY;
+					}, false);
+			
+					mCanvasId.addEventListener('touchmove', function(ev) {
+						canvasDraw(ev);
+					}, false);
+					
+					mCanvadId.addEventListener('touchend', function() {
+						mIsMouseDown = false;
+					}, false);
+				}
+				else
+				{
+                	// add mouse event listeners to the canvas elem
+                	mCanvasId.addEventListener("mousedown", function(ev){
+                    	mIsMouseDown = true;
+                    	getCoordinates(ev);
+                    	mPrevX = mX;
+                    	mPrevY = mY;
+                	},false);
+                
+                	mCanvasId.addEventListener("mousemove", function(ev){
+                    	canvasDraw(ev);
+                	},false);
+                
+                	mCanvasId.addEventListener("mouseup", function(){
+                    	mIsMouseDown = false;
+                	},false);
+                
+                	mCanvasId.addEventListener("mouseout", function(){
+                    	mIsMouseDown = false;
+                	},false);
+                }             
             }
             // end of public members ******************************************
             
@@ -86,6 +116,7 @@
             function drawLines()
             {
                 var context = mCanvasId.getContext("2d");
+                context.globalAlpha = 0.04;
                 context.strokeStyle = "#000";
                 context.lineWidth = 1;
                 context.lineCap = "round";
@@ -110,7 +141,7 @@
                 context.strokeStyle = "#000";
                 context.lineWidth = 1;
                 context.lineCap = "round";
-                context.globalAlpha = 0.05;
+                //context.globalAlpha = 0.05;
                 
                 var xMin = 0 - Math.min(25,x);
                 var xMax = Math.min(25,mCanvasId.width - x);
@@ -131,7 +162,7 @@
                     }
                 }
                 // restore alpha
-                context.globalAlpha = 1;
+                //context.globalAlpha = 1;
             }  
             
             function initTable()
@@ -147,13 +178,19 @@
                 }
             }
             
+            function positionControls()
+            {
+            	mCanvasId.width = window.innerWidth;
+            	mCanvasId.height = window.innerHeight;
+            }
+            
             return {
                 init: init
             }         
         }();   
     </script>
 </head>
-<body onload="canvasProj.init(canvas)">
+<body onload="canvasProj.init(canvas)" onresize="canvasProj.positionControls()">
 <canvas id="canvas" width="800px" height="600px"></canvas>
 </body>
 </html>
